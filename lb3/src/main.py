@@ -61,7 +61,7 @@ def redact(s1, s2, D, cursed):
     y, x = n - 1, m - 1
 
     while y > 0 or x > 0:
-        if y <= 0 or x <= 0:
+        if y < 0 or x < 0:
             print(f"-------------------\nПреобразовать строку {s1[1:]} к строке {s2[1:]} невозможно.")
             return
 
@@ -73,7 +73,12 @@ def redact(s1, s2, D, cursed):
                 f"Стоимость замены символа: {replace}.\n\t=> Наименьшая стоимость = {min_operation}.")
 
         if s1[y] in cursed:
-            if s1[y].upper() == 'U':
+            if s1[y] == s2[x]:
+                redact += 'M'
+                print(f"Символы совпадают, добавляем 'M'.\nПолученное на данном этапе редакционное предписание = {redact}.")
+                x -= 1
+                y -= 1
+            elif s1[y].upper() == 'U':
                 print(f"Символ '{s1[y]}' из слова '{s1[1:]}' проклят, однако является исключением.")
                 if delete <= insert:
                     redact += 'D'
