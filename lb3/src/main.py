@@ -25,21 +25,9 @@ def levenstein(s1, s2, replace_cost, insert_cost, delete_cost, cursed):
             print(f"-------------------\nСравним буквы '{s1[y]}' из слова '{s1[1:]}' и '{s2[x]}' из слова '{s2[1:]}'.")
             if s1[y] != s2[x]:
                 delete, insert, replace = D[y - 1][x] + delete_cost, D[y][x - 1] + insert_cost, D[y - 1][x - 1] + replace_cost
-
-                if y in cursed:
-                    if s1[y].upper() == 'U':
-                        D[y][x] = min(insert, delete)
-                        print(f"Символ '{s1[y]}' из слова '{s1[1:]}' проклят, однако является исключением.\n\tСтоимость добавления символа: {insert}.\n\tСтоимость удаления символа: {delete}." \
-                                f"\n\t => Значение в клетке ({y} {x}) = {D[y][x]}.")
-                    else:
-                        D[y][x] = insert
-                        print(f"Символ '{s1[y]}' из слова '{s1[1:]}' проклят.\n\tСтоимость добавления символа: {insert}." \
-                                f"\n\t=> Значение в клетке ({y} {x}) = {D[y][x]}.")
-                else:
-                    D[y][x] = min(delete, insert, replace)
-                    print(f"\tСтоимость добавления символа: {insert}.\n\tСтоимость удаления символа: {delete}.\n\t" \
-                                f"Стоимость замены символа: {replace}.\n\t => Значение в клетке ({y} {x}) = {D[y][x]}.")
-
+                D[y][x] = min(delete, insert, replace)
+                print(f"\tСтоимость добавления символа: {insert}.\n\tСтоимость удаления символа: {delete}.\n\t" \
+                            f"Стоимость замены символа: {replace}.\n\t => Значение в клетке ({y} {x}) = {D[y][x]}.")
             else:
                 D[y][x] = D[y - 1][x - 1]
                 print(f"\tБуквы равны. => Значение в клетке ({y} {x}) = {D[y][x]}.")
