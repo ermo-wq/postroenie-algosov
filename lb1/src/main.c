@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/time.h>
+#include <locale.h>
 
 #define MAX_SIZE 250
 
@@ -111,6 +112,7 @@ bool checkSpace(Board* board, Square square) {
 }
 
 void placeSquare(Board* board, Square square) {
+    wprintf(L"\t -> Размещаем квадрат размером %dx%d на позицию (%d, %d).\n", square.size, square.size, square.x, square.y);
     for (int y = 0; y < square.size; y++) {
         for (int x = 0; x < square.size; x++) {
             board->board[y + square.y][x + square.x] = board->squareCount + 1;
@@ -121,32 +123,40 @@ void placeSquare(Board* board, Square square) {
 }
 
 void printBoard(Board* board) {
+    wprintf(L"\t");
     for (int y = 0; y < board->boardSize; y++) {
         for (int x = 0; x < board->boardSize; x++) {
-            printf("%d ", board->board[y][x]);
+            wprintf(L"%d ", board->board[y][x]);
         }
-        printf("\n");
+        if (y < board->boardSize - 1) wprintf(L"\n\t");
+        else wprintf(L"\n");
     }
 }
 
 void printSquares(Board* board) {
-    printf("%d\n", board->squareCount);
+    wprintf(L"%d\n", board->squareCount);
     for (int i = 0; i < board->squareCount; i++) {
-        printf("%d %d %d\n", board->squares[i].x, board->squares[i].y, board->squares[i].size);
+        wprintf(L"%d %d %d\n", board->squares[i].x, board->squares[i].y, board->squares[i].size);
     }
 }
 
 void placeSquaresForPrime(Board* board) {
+    wprintf(L"Для доски, размер которой - простое число, заранее известно оптимальное расположение первых трех квадратов:\n");
+
     Square s1 = {0, 0, (board->boardSize + 1) / 2};
     Square s2 = {0, (board->boardSize + 1) / 2, (board->boardSize - 1) / 2};
     Square s3 = {(board->boardSize + 1) / 2, 0, (board->boardSize - 1) / 2};
-    
+
     placeSquare(board, s1);
     placeSquare(board, s2);
     placeSquare(board, s3);
+
+    printBoard(board);
 }
 
 void placeSquaresForEven(Board* board) {
+    wprintf(L"Для доски, размер которой - четное число, заранее известно оптимальное расположение первых трех квадратов:\n");
+
     Square s1 = {0, 0, board->boardSize / 2};
     Square s3 = {0, board->boardSize / 2, board->boardSize / 2};
     Square s2 = {board->boardSize / 2, 0, board->boardSize / 2};
@@ -156,9 +166,12 @@ void placeSquaresForEven(Board* board) {
     placeSquare(board, s2);
     placeSquare(board, s3);
     placeSquare(board, s4);
+
+    printBoard(board);
 }
 
 void placeSquaresForThree(Board* board) {
+    wprintf(L"Для доски, размер которой делится на 3, заранее известно оптимальное расположение первых трех квадратов:\n");
     int size = board->boardSize - board->boardSize / 3;
     Square s1 = {0, 0, size};
     Square s3 = {0, size, board->boardSize / 3};
@@ -167,6 +180,9 @@ void placeSquaresForThree(Board* board) {
     placeSquare(board, s1);
     placeSquare(board, s2);
     placeSquare(board, s3);
+
+    wprintf(L"Получившееся заполнение доски:\n");
+    printBoard(board);
 }
 
 void backtracking(Board* board) {
@@ -175,23 +191,25 @@ void backtracking(Board* board) {
     int allBoardsCount = 0;
     int operationCount = 0;
     allBoards[allBoardsCount++] = board;
-    
+
     while (allBoardsCount > 0) {
         findEmptyCell(allBoards[0], &x, &y);
         Board* currentBoard = createBoardCopy(allBoards[0]);
-        
-        printf("Going through options for the following board:\n");
+
+        wprintf(L"---------------------\nВозьмем первый в очереди вариант и попробуем разместить на нем квадраты всех доступных размеров:\n");
         printBoard(currentBoard);
+        wprintf(L"Найденная пустая клетка: (%d, %d).\n", x, y);
+        wprintf(L"Проверим какие квадраты можно в ней разместить:\n");
 
         for (int size = board->boardSize - 1; size > 0; size--) { 
             Square square = {x, y, size, currentBoard->squareCount};
             Board* newBoard = createBoardCopy(currentBoard);
             operationCount++;
-            
+
             if (checkSpace(newBoard, square)) {
                 placeSquare(newBoard, square);
-                
-                printf("Possible variant:\n");
+
+                wprintf(L"Получившееся заполнение доски:\n");
                 printBoard(newBoard);
 
                 if (allBoardsCount < MAX_SIZE) {
@@ -199,7 +217,7 @@ void backtracking(Board* board) {
                 }
 
                 if (checkFilled(newBoard)) {
-                    printf("Amount of operations required to fill a square of size [%d] is [%d].\n", board->boardSize, operationCount);
+                    wprintf(L"---------------------\nЗаполнение доски размером %d потребовало %d операций.\n", board->boardSize, operationCount);
                     copyBoardValue(newBoard, board);
                     for (int i = 0; i < allBoardsCount; i++) {
                         freeBoard(allBoards[i]);
@@ -212,8 +230,9 @@ void backtracking(Board* board) {
 
             freeBoard(newBoard);
         }
-        
+    
         freeBoard(currentBoard);
+        wprintf(L"Для данного варианта были рассмотрены размещения всех возможных размеров квадратов, удаляем его из очереди.\n");
         for (int i = 0; i < allBoardsCount - 1; i++) {
             allBoards[i] = allBoards[i + 1];
         }
@@ -222,6 +241,7 @@ void backtracking(Board* board) {
 }
 
 int main() {
+    setlocale(LC_ALL, "Russian");
     int size;
     scanf("%d", &size);
     if (size >= 2 && size <= 40) {
@@ -232,24 +252,24 @@ int main() {
 
         if (size % 2 == 0) {
             placeSquaresForEven(board);
-        } 
-        
+        }
+
         else if (size % 3 == 0) {
             placeSquaresForThree(board);
             backtracking(board);
         }
-        
-        else {   
+
+        else {
             placeSquaresForPrime(board);
             backtracking(board);
         }
-        
+
         gettimeofday(&stop, NULL);
-        
+
         double seconds = (stop.tv_sec - start.tv_sec) + (stop.tv_usec - start.tv_usec) / 1000000.0;
-        printf("Filling the square of size [%d] took [%.6f] seconds.\n", board->boardSize, seconds);
-        
-        printf("The board was filled with the following squares:\n");
+        wprintf(L"Заполнение доски размером %d заняло %.6f секунд.\n", board->boardSize, seconds);
+
+        wprintf(L"Итоговый вариант заполнения доски:\n");
         printBoard(board);
         freeBoard(board);
     }
