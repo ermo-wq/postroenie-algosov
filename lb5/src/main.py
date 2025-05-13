@@ -56,8 +56,6 @@ class AhoCorasick:
                 print(f"\tИщем суффикс в боре:")
                 c_index = self.alphabet.index(v.char)
                 v.suff_link = self.jump(self.get_suff_link(v.parent), c_index)
-                # c_index = self.alphabet.index(v.parent.char)
-                # v.suff_link = self.jump(self.get_suff_link(v.parent), c_index)
                 if v.suff_link != self.root: print("\tСуффикс найден.")
                 else: print("\tМаксимальный суффикс пустой.")
                 print(f"\t -> Строим суффиксную ссылку {self.get_suff(v)} ---> {self.get_suff(v.suff_link)}")
