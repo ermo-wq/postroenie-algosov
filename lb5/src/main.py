@@ -169,7 +169,8 @@ class AhoCorasick:
                         substring_position = substring_positions[pattern_num]
                         substring_length = len(substrings[pattern_num])
                         start_pos = i - substring_length - substring_position + 1
-                        counter[start_pos] += 1
+                        if start_pos + len(pattern) <= len(text):
+                            counter[start_pos] += 1
                     print(f"\t -> Вершина {temp.char} терминальная, обнаружено вхождение подстроки {temp.pattern}.")
                 temp = term
 
