@@ -177,10 +177,10 @@ class AhoCorasick:
             if count == len(substrings):
                 result.append(i + 1)
                 print(f"\t -> Количество вхождений совпало для позиции {i + 1} с числом {count}.")
+        print(f"Количество вершин в автомате = {self.node_count}.")
         return result
 
-# var = int(input("Выберите вариант:\n\t1. Поиск набора образцов.\n\t2. Поиск образца с джокером.\n"))
-var = 2
+var = int(input("Выберите вариант:\n\t1. Поиск набора образцов.\n\t2. Поиск образца с джокером.\n"))
 
 # Задание 1
 if var == 1:
@@ -222,3 +222,13 @@ else:
 
     print(f"----------------\nШаг 6. Вывод найденных вхождений шаблона.")
     print(f" -> Шаблон {wildcard_pattern} встречается в тексте {text} на позициях: {", ".join(map(str, matches))}.")
+
+    print("----------------\nШаг. 7. Вывод найденных пересечений.")
+    positions = [-1 for _ in range(len(text))]
+    length = len(wildcard_pattern)
+    for pos in matches:
+        for i in range(length):
+            if positions[pos + i - 1] != -1:
+                print(f" -> Шаблон {wildcard_pattern} пересекается с шаблоном {wildcard_pattern} на позиции {pos + i}.")
+                break
+            positions[pos + i - 1] = 1
