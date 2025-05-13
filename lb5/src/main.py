@@ -25,13 +25,13 @@ class AhoCorasick:
         return f"{v.char if v.char != '' else 'root'}"
 
     def get_suff(self, v):
-        if v.char == '':
+        if v == self.root:
             return 'root'
-        result = v.char
-        while v.parent is not self.root:
-            result += v.parent.char
+        result = ''
+        while v != self.root:
+            result = v.char + result
             v = v.parent
-        return result[::-1]
+        return result
 
     def jump(self, v, c_index):
         if v.jump[c_index] is None:
@@ -39,11 +39,11 @@ class AhoCorasick:
                 v.jump[c_index] = v.next[c_index]
                 print(f"\t -> Перейдем по бору {self.get_suff(v)} ---> {self.get_char(v.jump[c_index])}.")
             elif v == self.root:
-                print(f"\t -> Перешли в root.")
                 v.jump[c_index] = self.root
+                print(f"\t -> Перейдем в root.")
             else:
                 v.jump[c_index] = self.jump(self.get_suff_link(v), c_index)
-                # print(f"\t -> Перейдем по суффиксной ссылке {self.get_suff(v)} ---> {self.get_suff(v.jump[c_index])}.")
+                print(f"\t -> Перейдем по суффиксной ссылке {self.get_suff(v)} ---> {self.get_suff(v.jump[c_index])}.")
         else: print(f"\t -> Переход по автомату {self.get_suff(v)} ---> {self.get_suff(v.jump[c_index])}.")
         return v.jump[c_index]
 
@@ -51,13 +51,16 @@ class AhoCorasick:
         if v.suff_link is None:
             if v == self.root or v.parent == self.root:
                 v.suff_link = self.root
+                print(f"\t -> Строим суффиксную ссылку на root.")
             else:
                 print(f"\tИщем суффикс в боре:")
-                c_index = self.alphabet.index(v.parent.char)
+                c_index = self.alphabet.index(v.char)
                 v.suff_link = self.jump(self.get_suff_link(v.parent), c_index)
+                # c_index = self.alphabet.index(v.parent.char)
+                # v.suff_link = self.jump(self.get_suff_link(v.parent), c_index)
                 if v.suff_link != self.root: print("\tСуффикс найден.")
                 else: print("\tМаксимальный суффикс пустой.")
-            print(f"\t -> Строим суффиксную ссылку {self.get_suff(v)} ---> {self.get_suff(v.suff_link)}")
+                print(f"\t -> Строим суффиксную ссылку {self.get_suff(v)} ---> {self.get_suff(v.suff_link)}")
         else: print(f"\t -> Переходим по суффиксной ссылке {self.get_suff(v)} ---> {self.get_suff(v.suff_link)}.")
         return v.suff_link
 
@@ -84,7 +87,6 @@ class AhoCorasick:
                 new_node = Node(self.alphabet_size)
                 new_node.char = c
                 new_node.parent = cur
-                new_node.parent.char = c
                 cur.next[c_index] = new_node
                 self.node_count += 1
             else: print(f"\t -> Символ '{c}' уже существует в боре.")
@@ -113,8 +115,9 @@ class AhoCorasick:
                     for pattern_num in temp.leaf_pattern_number:
                         pattern_length = len(self.patterns[pattern_num])
                         start_pos = i - pattern_length + 1
-                        result.append((start_pos, pattern_num))
-                    print(f"\t -> Вершина {c} терминальная, обнаружено вхождение подстроки {temp.pattern}.")
+                        if (start_pos, pattern_num) not in result:
+                            result.append((start_pos, pattern_num))
+                            print(f"\t -> Вершина {temp.char} терминальная, обнаружено вхождение подстроки {temp.pattern}.")
                     print(f"\t -> Переходим по терминальной ссылке {self.get_suff(temp)} ---> {self.get_suff(term)}.")
                 temp = term
 
@@ -184,12 +187,12 @@ var = int(input("Выберите вариант:\n\t1. Поиск набора 
 
 # Задание 1
 if var == 1:
-    text = input().strip()
-    n = int(input())
-    patterns = [input() for _ in range(n)]
+    text = input("Введите текст: ").strip()
+    n = int(input("Введите число шаблонов: "))
+    patterns = [input("Введите шаблон: ") for _ in range(n)]
 
     ac = AhoCorasick()
-    print("Шаг 1. Добавим все строки в бор.")
+    print("----------------\nШаг 1. Добавим все строки в бор.")
     for i, pattern in enumerate(patterns):
         ac.add_string(pattern, i)
 
